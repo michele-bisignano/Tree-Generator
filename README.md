@@ -52,29 +52,6 @@ Upon execution, the script will:
 2.  Ignore files defined in the `IGNORE_LIST`.
 3.  Generate (or overwrite) the file at `Docs/Project_Structure/repository_tree.md`.
 
-## Configuration
-
-Open `generate_tree.py` to adjust the settings at the top of the file:
-
-### 1. Ignore List
-Add files or folders you want to hide from the tree:
-```python
-IGNORE_LIST = {
-    '.git', 
-    'node_modules', 
-    '.env',
-    # Add your specific exclusions here
-}
-```
-
-### 2. Output Path
-Change where the Markdown file is saved:
-```python
-OUTPUT_REL_PATH = Path("README.md") # Example: Overwrite the main readme (use with caution)
-# OR
-OUTPUT_REL_PATH = Path("Docs/architecture.md")
-```
-
 ## Example Output
 
 The script generates a clean, spaced-out tree like this:
