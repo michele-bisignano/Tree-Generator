@@ -18,7 +18,7 @@ This repository itself uses the script to generate its own structure.
 - **Smart Visual Formatting:** 
   - Distinguishes directories with a trailing slash (`Docs/` vs `file.txt`).
   - Adds "smart spacing" (empty vertical lines) between folder blocks to improve readability.
-- **Clean Output:** Automatically wraps the result in Markdown code blocks for immediate rendering on GitHub/GitLab, It ignores .gitignore files.
+- **Clean Output:** Automatically wraps the result in Markdown code blocks for immediate rendering on GitHub/GitLab, It ignores '.gitignore' files.
 - **Customizable:** Easily configure ignored files and output paths directly in the script.
 
 ## Getting Started
