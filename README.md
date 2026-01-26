@@ -79,6 +79,9 @@ MyProject/
 │   ├── Images/
 │   │   └── diagram.png
 │   │
+│   ├── Project_Structure/
+│   │   └── repository_tree.md
+│   │
 │   └── Specifications/
 │       └── requirements.md
 │
@@ -94,4 +97,3 @@ MyProject/
 
 ## Author
 **Michele Bisignano**
-```
