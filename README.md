@@ -18,7 +18,7 @@ This repository itself uses the script to generate its own structure.
 - **Smart Visual Formatting:** 
   - Distinguishes directories with a trailing slash (`Docs/` vs `file.txt`).
   - Adds "smart spacing" (empty vertical lines) between folder blocks to improve readability.
-- **Clean Output:** Automatically wraps the result in Markdown code blocks for immediate rendering on GitHub/GitLab.
+- **Clean Output:** Automatically wraps the result in Markdown code blocks for immediate rendering on GitHub/GitLab, It ignores .gitignore files.
 - **Customizable:** Easily configure ignored files and output paths directly in the script.
 
 ## Getting Started
@@ -49,8 +49,7 @@ python Tools/generate_tree.py
 
 Upon execution, the script will:
 1.  Scan the directory structure.
-2.  Ignore files defined in the `IGNORE_LIST`.
-3.  Generate (or overwrite) the file at `Docs/Project_Structure/repository_tree.md`.
+2.  Generate (or overwrite) the file at `Docs/Project_Structure/repository_tree.md`.
 
 ## Example Output
 
