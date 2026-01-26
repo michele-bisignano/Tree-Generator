@@ -7,6 +7,12 @@ Keeping documentation synchronized with the actual file structure of a project i
 
 It automatically scans your project, filters out technical artifacts (like `.git`, `__pycache__`, or build folders), and generates a clean, visually formatted directory tree in Markdown. This ensures that your `repository_tree.md` or architectural documentation never becomes obsolete.
 
+## Live Demo
+This repository itself uses the script to generate its own structure. 
+
+*   **[📂 View the Script Source Code](Tools/generate_tree.py)**
+*   **[📄 View the Generated Output File](Docs/Project_Structure/repository_tree.md)**
+
 ## Features
 - **Automatic Root Detection:** The script intelligently locates the project root, regardless of the depth from which it is executed.
 - **Smart Visual Formatting:** 
