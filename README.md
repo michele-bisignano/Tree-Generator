@@ -17,8 +17,8 @@ This repository itself uses the script to generate its own structure.
 - **Smart Root Detection:** The script automatically locates the project root (looking for `.git` or `.gitignore`), regardless of where you run it from.
 - **Gitignore Integration:** Respects your project's `.gitignore` rules to exclude unwanted files (e.g., `venv`, `__pycache__`, build folders).
 - **Automated Workflow:** Includes a setup script to install a Git hook, keeping documentation updated automatically on every commit.
+- **Cross-Platform:** The automation works seamlessly on Windows, macOS, and Linux.
 - **CLI Support:** Fully customizable via command-line arguments (set output path, max depth, etc.).
-- **Performance Control:** Supports a recursion depth limit (`--depth`) to handle large repositories without clutter.
 - **Clean Output:** Automatically wraps the result in Markdown code blocks for immediate rendering on GitHub/GitLab.
 
 ## Getting Started
@@ -46,7 +46,10 @@ You can configure the repository to **automatically update the tree every time y
 To enable this, run the setup script once:
 
 ```bash
-# Windows / Linux / macOS
+# macOS / Linux
+python3 Tools/setup_hook.py
+
+# Windows
 python Tools/setup_hook.py
 ```
 
@@ -60,6 +63,10 @@ You can also run the script manually from the CLI if needed.
 Generates the tree starting from the project root and saves it to the default path (`Docs/Project_Structure/repository_tree.md`).
 
 ```bash
+# macOS / Linux
+python3 Tools/generate_tree.py
+
+# Windows
 python Tools/generate_tree.py
 ```
 
@@ -67,21 +74,21 @@ python Tools/generate_tree.py
 If you only want to see the high-level architecture (e.g., top 2 levels):
 
 ```bash
-python Tools/generate_tree.py --depth 2
+python3 Tools/generate_tree.py --depth 2
 ```
 
 ### 3. Custom Output File
 Save the tree to a specific file (e.g., directly to a Markdown file in the root):
 
 ```bash
-python Tools/generate_tree.py --output ARCHITECTURE.md
+python3 Tools/generate_tree.py --output ARCHITECTURE.md
 ```
 
 ### 4. Show Help
 View all available options:
 
 ```bash
-python Tools/generate_tree.py --help
+python3 Tools/generate_tree.py --help
 ```
 
 ## Example Output
