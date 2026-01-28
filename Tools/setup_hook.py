@@ -1,14 +1,18 @@
 """
 ================================================================================
-SCRIPT:        Project Directory Tree Generator
+SCRIPT:        Setup Git Hook
 AUTHOR:        Michele Bisignano & Mattia Franchini
 DATE:          January 2026
 LICENSE:       MIT License
 
+DESCRIPTION:
+    Installs a git pre-commit hook that works on Windows, macOS, and Linux.
+    It automatically detects whether to use 'python' or 'python3'.
+
 USAGE:
-    Run this script only the first time
+    Run this script only once to configure the repository:
     
-    $ ppython setup_hook.py                       
+    $ python Tools/setup_hook.py                       
 ================================================================================
 """
 import os
@@ -29,13 +33,20 @@ def install_hook():
     # 2. Define the hook file path
     hook_path = hooks_dir / "pre-commit"
 
-    # 3. Content of the bash script that will be executed by Git
-    # UPDATED: Usiamo 'python3' specificamente per macOS
+    # 3. Content of the bash script (Cross-Platform Logic)
+    # This shell script checks if 'python3' exists, otherwise falls back to 'python'
     hook_content = (
         "#!/bin/sh\n"
         "echo '[HOOK] Automatically updating project structure...'\n\n"
+        "# Detect Python command (python3 or python)\n"
+        "if command -v python3 >/dev/null 2>&1; then\n"
+        "    PY_CMD=python3\n"
+        "else\n"
+        "    PY_CMD=python\n"
+        "fi\n\n"
+        "echo \"[HOOK] Using command: $PY_CMD\"\n\n"
         "# 1. Generate the updated tree\n"
-        "python3 Tools/generate_tree.py\n\n"
+        "$PY_CMD Tools/generate_tree.py\n\n"
         "# 2. Add the generated file to the current commit\n"
         "git add Docs/Project_Structure/repository_tree.md\n"
     )
@@ -45,12 +56,13 @@ def install_hook():
         with open(hook_path, "w", encoding="utf-8", newline='\n') as f:
             f.write(hook_content)
         
-        # 5. Make the file executable
+        # 5. Make the file executable (Critical for Mac/Linux)
         st = os.stat(hook_path)
         os.chmod(hook_path, st.st_mode | stat.S_IEXEC)
         
         print(f"[SUCCESS] Hook installed at: {hook_path}")
-        print("From now on, repository_tree.md will update on every commit!")
+        print("From now on, the tree will update automatically on every commit.")
+        print("(Compatible with Windows, macOS, and Linux)")
         
     except Exception as e:
         print(f"[ERROR] Could not write the hook: {e}")
