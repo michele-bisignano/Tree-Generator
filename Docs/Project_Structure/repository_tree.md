@@ -7,5 +7,7 @@ Tree-Generator/
 ├── LICENSE
 ├── README.md
 └── Tools/
-    └── generate_tree.py
+    ├── generate_tree.py
+    ├── setup_hook.py
+    └── test_file.txt
 ```
