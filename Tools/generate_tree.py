@@ -1,22 +1,27 @@
 """
 ================================================================================
 SCRIPT:        Project Directory Tree Generator
-AUTHOR:        Michele Bisignano
+AUTHOR:        Michele Bisignano & Mattia Franchini
 DATE:          January 2026
 LICENSE:       MIT License
 
 DESCRIPTION:
     This script automatically generates a visual representation of the project's 
-    file structure (a directory tree). 
-    
-    It respects the project's '.gitignore' file to determine which files should 
-    be excluded. If no '.gitignore' is found, it lists all files.
-    
-    The output is saved as a Markdown file wrapped in code blocks.
+    file structure (a directory tree) and saves it as a Markdown file.
+
+    FEATURES:
+    - Smart Root Detection: Automatically finds the project root (looking for .git).
+    - Gitignore Support: Respects .gitignore rules to exclude unwanted files.
+    - CLI Support: Customizable output path and recursion depth via arguments.
+    - Performance: Supports a --depth limit for large repositories.
 
 USAGE:
-    Run this script from the 'Tools/' directory (or anywhere within the project).
-    It will automatically detect the project root and update the documentation.
+    Run this script from anywhere within the project using Python:
+    
+    $ python tree_gen.py                        # Default usage
+    $ python tree_gen.py --depth 2              # Limit recursion depth
+    $ python tree_gen.py --output docs/tree.md  # Custom output file
+    $ python tree_gen.py --help                 # Show all options
 ================================================================================
 """
 
@@ -24,6 +29,7 @@ import os
 import fnmatch
 from pathlib import Path
 from typing import List, Set
+import argparse
 
 # ==========================================
 # CONFIGURATION
@@ -31,6 +37,17 @@ from typing import List, Set
 
 # The target output path relative to the project root.
 OUTPUT_REL_PATH = Path("Docs/Project_Structure/repository_tree.md")
+
+def find_project_root(start_path: Path) -> Path:
+    """
+    Recursively looks up parent directories until .git or .gitignore is found.
+    Fallback to the current path if not found.
+    """
+    current = start_path.resolve()
+    for path in [current] + list(current.parents):
+        if (path / ".git").exists() or (path / ".gitignore").exists():
+            return path
+    return current
 
 # ==========================================
 # LOGIC
@@ -66,7 +83,30 @@ def load_gitignore_patterns(root_path: Path) -> List[str]:
     
     return patterns
 
-def is_ignored(name: str, patterns: List[str]) -> bool:
+def is_ignored(path: Path, patterns: List[str], root_path: Path) -> bool:
+    """
+    Checks if a file or directory should be ignored, handling relative paths
+    and folder-specific patterns.
+    """
+    name = path.name
+    
+    # Calculate path relative to root for precise matching (e.g., src/temp/*)
+    try:
+        rel_path = path.relative_to(root_path).as_posix()
+    except ValueError:
+        rel_path = name
+
+    for pattern in patterns:
+        clean_pattern = pattern.rstrip('/')
+        
+        # If pattern ends with '/', it should only match directories
+        if pattern.endswith('/') and not path.is_dir():
+            continue
+            
+        # Match against filename (e.g., *.log) OR relative path (e.g., logs/*.txt)
+        if fnmatch.fnmatch(name, clean_pattern) or fnmatch.fnmatch(rel_path, clean_pattern):
+            return True
+    return False
     """
     Checks if a file or directory name matches any of the gitignore patterns.
     
@@ -87,31 +127,24 @@ def is_ignored(name: str, patterns: List[str]) -> bool:
             
     return False
 
-def generate_tree_structure(current_path: Path, patterns: List[str], prefix: str = "") -> str:
-    """
-    Recursively iterates through directories to build a visual tree structure string.
-    
-    It filters items based on the provided ignore patterns (from .gitignore).
-    It adds 'smart spacing' (empty vertical lines) between folder blocks.
+def generate_tree_structure(current_path: Path, patterns: List[str], root_path: Path, 
+                            prefix: str = "", current_depth: int = 0, max_depth: int = -1) -> str:
+    # 1. STOP if max depth is reached
+    if max_depth != -1 and current_depth > max_depth:
+        return ""
 
-    Args:
-        current_path (Path): The Path object of the directory currently being scanned.
-        patterns (List[str]): List of ignore patterns.
-        prefix (str): The string prefix used for indentation and visual tree connectors.
-
-    Returns:
-        str: A multi-line string representing the formatted directory tree.
-    """
     output_string = ""
-    
     try:
-        # Sort items: Case-insensitive alphabetical order
         items = sorted(os.listdir(current_path), key=lambda s: s.lower())
     except PermissionError:
         return ""
 
-    # Filter out items based on .gitignore patterns
-    filtered_items = [item for item in items if not is_ignored(item, patterns)]
+    # 2. FILTER items using the new is_ignored logic (passing the full path)
+    filtered_items = []
+    for item in items:
+        full_path = current_path / item
+        if not is_ignored(full_path, patterns, root_path):
+            filtered_items.append(item)
     
     count = len(filtered_items)
     for i, item in enumerate(filtered_items):
@@ -119,30 +152,21 @@ def generate_tree_structure(current_path: Path, patterns: List[str], prefix: str
         path = current_path / item
         is_dir = path.is_dir()
         
-        # Format the display name: append '/' if it is a directory
         display_name = f"{item}/" if is_dir else item
-
-        # Determine the connector symbol based on list position
         connector = "└── " if is_last else "├── "
-        
-        # Append the current item to the output string
         output_string += f"{prefix}{connector}{display_name}\n"
         
         if is_dir:
-            # Determine the extension prefix for the next recursive level
             extension = "    " if is_last else "│   "
-            
-            # Recursive call to process the subdirectory
-            output_string += generate_tree_structure(path, patterns, prefix + extension)
-            
-            # Add a vertical spacer line to visually separate folder blocks,
-            # but only if there are subsequent items in the current directory.
-            if not is_last:
-                output_string += f"{prefix}│\n"
+            # 3. RECURSIVE CALL with new parameters
+            output_string += generate_tree_structure(
+                path, patterns, root_path, prefix + extension, 
+                current_depth + 1, max_depth
+            )
 
     return output_string
 
-def main():
+
     """
     Main entry point of the script.
 
@@ -177,6 +201,52 @@ def main():
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
     # 6. Write File
+    try:
+        with open(output_file, "w", encoding="utf-8") as f:
+            f.write(final_content)
+        print(f"[SUCCESS] Tree generated successfully at: {output_file}")
+    except Exception as e:
+        print(f"[ERROR] Failed to write file: {e}")
+
+def main():
+    parser = argparse.ArgumentParser(description="Generate Project Directory Tree")
+    parser.add_argument("--root", type=str, default=None, help="Root path (default: auto-detect)")
+    parser.add_argument("--output", type=str, default=str(OUTPUT_REL_PATH), help="Output file path")
+    parser.add_argument("--depth", type=int, default=-1, help="Max recursion depth (-1 for infinite)")
+    
+    args = parser.parse_args()
+
+    # 1. Determine Project Root
+    if args.root:
+        project_root = Path(args.root).resolve()
+    else:
+        # Use the new auto-detection function
+        project_root = find_project_root(Path(__file__))
+    
+    print(f"[INFO] Project Root detected at: {project_root}")
+
+    # 2. Load Ignore Patterns
+    patterns = load_gitignore_patterns(project_root)
+
+    # 3. Generate the Tree String (passing new arguments)
+    tree_body = generate_tree_structure(
+        project_root, patterns, project_root, max_depth=args.depth
+    )
+    
+    final_content = (
+        "```text\n"
+        f"{project_root.name}/\n"
+        f"{tree_body}"
+        "```\n"
+    )
+
+    # 4. Define Output Path (handles absolute or relative paths)
+    out_path = Path(args.output)
+    output_file = out_path if out_path.is_absolute() else project_root / out_path
+    
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+
+    # 5. Write File
     try:
         with open(output_file, "w", encoding="utf-8") as f:
             f.write(final_content)
