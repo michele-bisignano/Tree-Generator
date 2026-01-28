@@ -16,6 +16,7 @@ This repository itself uses the script to generate its own structure.
 ## Features
 - **Smart Root Detection:** The script automatically locates the project root (looking for `.git` or `.gitignore`), regardless of where you run it from.
 - **Gitignore Integration:** Respects your project's `.gitignore` rules to exclude unwanted files (e.g., `venv`, `__pycache__`, build folders).
+- **Automated Workflow:** Includes a setup script to install a Git hook, keeping documentation updated automatically on every commit.
 - **CLI Support:** Fully customizable via command-line arguments (set output path, max depth, etc.).
 - **Performance Control:** Supports a recursion depth limit (`--depth`) to handle large repositories without clutter.
 - **Clean Output:** Automatically wraps the result in Markdown code blocks for immediate rendering on GitHub/GitLab.
@@ -27,19 +28,33 @@ This repository itself uses the script to generate its own structure.
 - No external libraries required (uses standard `os`, `argparse`, `pathlib`).
 
 ### Installation
-Simply copy the `generate_tree.py` script into your project. A common convention is to place it in a `Tools/` directory.
+Simply copy the `Tools/` directory into your project.
 
 ```text
 MyProject/
 ├── Tools/
-│   └── generate_tree.py  <-- Place script here
+│   ├── generate_tree.py  <-- The main script
+│   └── setup_hook.py     <-- The automation installer
 ├── src/
 └── ...
 ```
 
-## Usage
+## Automation (Set & Forget)
 
-You can run the script from anywhere in your project.
+You can configure the repository to **automatically update the tree every time you commit**. This ensures the documentation is never out of sync with the code.
+
+To enable this, run the setup script once:
+
+```bash
+# Windows / Linux / macOS
+python Tools/setup_hook.py
+```
+
+*Note: This creates a pre-commit hook in your local `.git` configuration. From now on, whenever you run `git commit`, the tree will be regenerated and included in the commit automatically.*
+
+## Manual Usage
+
+You can also run the script manually from the CLI if needed.
 
 ### 1. Default Run
 Generates the tree starting from the project root and saves it to the default path (`Docs/Project_Structure/repository_tree.md`).
@@ -95,5 +110,5 @@ MyProject/
 └── LICENSE
 ```
 
-## Author
+## Authors
 **Michele Bisignano & Mattia Franchini**
